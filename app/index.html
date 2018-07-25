@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>zeus rover</title>
+
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet">
+    <!-- Place favicon.ico in the root directory -->
+
+    <!-- build:css styles/vendor.css -->
+    <!-- bower:css -->
+    <!-- endbower -->
+    <!-- endbuild -->
+
+    <!-- build:css styles/main.css -->
+    <link rel="stylesheet" href="styles/main.css">
+    <!-- endbuild -->
+
+  </head>
+  <body>
+    <!--[if IE]>
+      <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+
+    <main>
+      <h1>
+        Zeus' Rover
+      </h1>
+      <h2>Engine</h2>
+      <div>
+        <button data-msg="on" id="on-btn" class="button">
+          On
+        </button>
+        <button data-msg="off" id="off-btn" class="button">
+          Off
+        </button>
+      </div>
+      <h2>
+        Controller
+      </h2>
+      <div id="joystick">
+
+      </div>
+      <div>
+        Speed: <span id="speed-left">0</span>(L) <span id="speed-right">0</span>(R)
+      </div>
+    </main>
+
+    <!-- build:js scripts/vendor.js -->
+    <!-- bower:js -->
+    <script src="/bower_components/nipplejs/dist/nipplejs.js"></script>
+    <!-- endbower -->
+    <!-- endbuild -->
+    <script>
+      var WEBSOCKET_SERVER = '192.168.1.7';
+    </script>
+
+    <!-- build:js scripts/main.js -->
+    <script src="scripts/main.js"></script>
+    <!-- endbuild -->
+  </body>
+</html>

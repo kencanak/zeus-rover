@@ -1,0 +1,50 @@
+body {
+  margin: 0;
+  padding: 0;
+
+  background-color: #000;
+
+  color: #fff;
+}
+
+main {
+  display: flex;
+
+  flex-direction: column;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  font-family: 'Source Code Pro', monospace;
+
+  padding: 48px;
+
+  .button {
+    background-color: #000;
+    border-color: #000;
+    color: #fff;
+    padding: 16px;
+
+    font-family: 'Source Code Pro', monospace;
+
+    transition: background-color 0.25s ease-out, color 0.25s ease-out;
+
+    &--active {
+      background-color: #fff;
+      color: #000;
+    }
+  }
+
+  h2:not(:first-of-type) {
+    margin-top: 48px;
+  }
+
+  #joystick {
+    position: relative;
+    width: 200px;
+    height: 200px;
+
+    box-sizing: border-box;
+  }
+}

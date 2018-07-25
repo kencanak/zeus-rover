@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "engines": {
+    "node": ">=4"
+  },
+  "devDependencies": {
+    "websocket": "^1.0.26"
+  }
+}
