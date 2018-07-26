@@ -2,7 +2,7 @@
 Lazy dog rover, using onion omega2
 
 # Motivation
-I have a pug called "Zeus", who is super lazy to walk (after 15 mins walk). This rover purpose is to carry him when he feels tired of walking
+I have a pug called "Zeus", who is super lazy to walk (after 15 mins walk). The purpose of this rover is to drive him when he feels tired of walking
 
 # Prototype
 [![Alt text](https://img.youtube.com/vi/N0mmmJIgTCY/0.jpg)](https://www.youtube.com/watch?v=N0mmmJIgTCY)
