@@ -41,3 +41,6 @@ At a minimum, you will need the following tools installed:
 
 # Schematics
 TO DO
+
+# Acknowledgement
+Thank you [skezo](https://github.com/skezo/) for being an awesome teacher
