@@ -1,161 +1,81 @@
-const pwmExp = require('/usr/bin/node-pwm-exp');
+'use strict';
+const PWM = require('./pwm');
 
-const CHANNELS = {
-  leftMotorIN1: 6,
-  leftMotorIN2: 7,
-  leftMotorPwm: 5,
-  rightMotorIN1: 9,
-  rightMotorIN2: 8,
-  rightMotorPwm: 10,
-  redLed: 3,
-  yellowLed: 2,
-  greenLed: 1,
-};
+class Motor extends PWM {
+  /**
+   * @param {Object} pins - with following props
+   *                        {
+   *                          left_in1: left input 1,
+   *                          left_in2: left input 2,
+   *                          left_pwm: left pwm,
+   *                          right_in1: right input 1,
+   *                          right_in2: right input 2,
+   *                          right_pwm: right pwm
+   *                        }
+   */
+  constructor(pins) {
+    super(50);
 
-var isOn = false;
-var isStopped = false;
-var isBackward = false;
+    this._pins = pins;
 
-pwmExp.setFrequency(1526);
+    console.info('motor pins');
+    console.info(this._pins);
 
-const engineStatus = () => {
-  return pwmExp.checkInit();
-};
+    this.on('stopped', () => {
+      console.info('motor stopped');
+    });
 
-const on = (boot) => {
-  console.log('motor on');
-
-  if (pwmExp.checkInit()) {
-    console.log('Oscillator sucessfull initialized');
-  } else {
-    console.warn('oscillator initializing');
-    pwmExp.driverInit();
+    this.on('cruising', () => {
+      console.info('motor cruising');
+    });
   }
 
-  if (boot) {
-    light('all');
+  _cruise(speed_right, speed_left) {
+    this.emit(!speed_left && !speed_right ? 'stopped' : 'cruising');
 
-    setTimeout(() => {
-      light('off');
-    }, 3000);
+    // send pwm signal to right wheels
+    this.setPwmDriver(this._pins.right_pwm, speed_right, 0);
+
+    // send pwm signal to left wheels
+    this.setPwmDriver(this._pins.left_pwm, speed_left, 0);
   }
 
-  isOn = true;
-};
+  _setDirection(forward, reverse) {
+    this.setPwmDriver(this._pins.left_in1, forward ? 100 : 0, 0);
+    this.setPwmDriver(this._pins.left_in2, reverse ? 100 : 0, 0);
 
-const off = () => {
-  console.log('motor off');
-  pwmExp.disableChip();
-  light('off');
-  isOn = false;
-};
-
-const cruise = (speedRight, speedLeft) => {
-  if (!isOn) {
-    on();
+    this.setPwmDriver(this._pins.right_in2, reverse ? 100 : 0, 0);
+    this.setPwmDriver(this._pins.right_in1, forward ? 100 : 0, 0);
   }
 
-  pwmExp.setupDriver(CHANNELS.leftMotorPwm, speedLeft, 0, () => {
-    console.log('channel ' + CHANNELS.leftMotorPwm + ' set');
-  });
-
-
-  pwmExp.setupDriver(CHANNELS.rightMotorPwm, speedRight, 0, () => {
-    console.log('channel ' + CHANNELS.rightMotorPwm + ' set');
-  });
-
-  if (speedRight === 0 && speedLeft === 0 && !isStopped) {
-    light('stop');
-    isStopped = true;
-  } else {
-    isStopped = false;
-  }
-};
-
-const light = (type) => {
-  var red = 0;
-  var yellow = 0;
-  var green = 0;
-
-  switch (type) {
-    case 'stop':
-      red = 50;
-      break;
-    case 'reverse':
-      yellow = 50;
-      break;
-    case 'move':
-      green = 50;
-      break;
-    case 'all':
-      green = 50;
-      yellow = 50;
-      red = 50;
-      break;
+  stop() {
+    this._cruise(0, 0);
   }
 
-  pwmExp.setupDriver(CHANNELS.redLed, red, 0, () => {
-    console.log('led red:' + red);
-  });
+  /**
+   * this method is used for directing motor movement
+   * @param {float} x - nipple js x position
+   * @param {float} y - nipple js y position
+   */
+  move(x, y) {
+    const forward = y < 0;
+    const reverse = y > 0;
 
-  pwmExp.setupDriver(CHANNELS.yellowLed, yellow, 0, () => {
-    console.log('led yellow:' + yellow);
-  });
+    // compute the speed for each side of motors
+    const speedRight = Math.min(100, Math.max(0, (Math.abs(y) - x)));
+    const speedLeft = Math.min(100, Math.max(0, (Math.abs(y) + x)));
 
-  pwmExp.setupDriver(CHANNELS.greenLed, green, 0, () => {
-    console.log('led green:' + green);
-  });
-};
+    // set motor direction
+    this._setDirection(forward, reverse);
 
-const move = (x, y) => {
-  if (!isOn) {
-    on();
+    // set motor cruising speed
+    this._cruise(speedRight, speedLeft);
+
+    return {
+      right: speedRight,
+      left: speedLeft
+    };
   }
+}
 
-  const forward1 = y < 0;
-  const forward2 = y > 0;
-
-  if (forward1 && isBackward) {
-    light('move');
-    isBackward = false;
-  } else if (!forward1 && !isBackward) {
-    light('reverse');
-    isBackward = true;
-  }
-
-  pwmExp.setupDriver(CHANNELS.leftMotorIN1, forward1 ? 100 : 0, 0, () => {
-    console.log('left motor 1:' + forward1);
-  });
-
-  pwmExp.setupDriver(CHANNELS.leftMotorIN2, forward2 ? 100 : 0, 0, () => {
-    console.log('left motor 2:' + forward2);
-  });
-
-
-  pwmExp.setupDriver(CHANNELS.rightMotorIN2, forward1 ? 100 : 0, 0, () => {
-    console.log('right motor 1:' + forward1);
-  });
-
-  pwmExp.setupDriver(CHANNELS.rightMotorIN1, forward2 ? 100 : 0, 0, () => {
-    console.log('right motor 2:' + forward2);
-  });
-
-  var speedRight = Math.min(100, Math.max(0, (Math.abs(y) - x)));
-  var speedLeft = Math.min(100, Math.max(0, (Math.abs(y) + x)));
-
-  cruise(speedRight, speedLeft);
-
-  return {
-    right: speedRight,
-    left: speedLeft
-  };
-};
-
-module.exports = {
-  on: on,
-  off: off,
-  move: move,
-  cruise: cruise,
-  engineStatus: engineStatus,
-  light: light
-};
+module.exports = Motor;

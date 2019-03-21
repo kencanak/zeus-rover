@@ -3,10 +3,18 @@ const http = require('http');
 const fs = require('fs');
 const WebSocketServer = require('websocket').server;
 const path = require('path');
-const motor = require('./motor');
+const Motor = require('./motor');
+const motor = new Motor({
+  left_in1: 6,
+  left_in2: 7,
+  left_pwm: 5,
+  right_in1: 9,
+  right_in2: 8,
+  right_pwm: 10,
+});
 
-const SERVER_HOSTNAME = os.networkInterfaces()['apcli0'][0].address;
-
+const SERVER_HOSTNAME = os.networkInterfaces()['br-wlan'][0].address;
+console.log('hostname:', SERVER_HOSTNAME);
 const HTTP_SERVER_PORT = 8080;
 const WEBSOCKET_SERVER_PORT = 1337;
 const WEB_ROOT = path.join(__dirname, '..', 'dist');
@@ -80,13 +88,15 @@ const startWebSocketServer = () => {
 
   // WebSocket server
   wsServer.on('request', function(request) {
+    console.log('websocket request');
+    // console.log(request.accept);
     var connection = request.accept(null, request.origin);
 
     console.log('web socket connection request received');
 
     const sendEngineStatus = (speedLeft, speedRight) => {
       connection.sendUTF(JSON.stringify({
-        engine: motor.engineStatus(),
+        engine: motor.pwmStatus(),
         speedLeft: speedLeft,
         speedRight: speedRight
       }));
@@ -96,19 +106,24 @@ const startWebSocketServer = () => {
 
     // message request handler
     connection.on('message', function(message) {
+      console.log('websocket message received');
+      console.log(message);
+      if (!message) {
+        return;
+      }
       const data = JSON.parse(message.utf8Data);
 
       console.log(data);
 
       switch(data.task) {
         case 'off':
-          motor.off();
+          motor.turnOffPwm();
           break;
         case 'on':
-          motor.on(true);
+          motor.init();
           break;
         case 'stop':
-          motor.cruise(0, 0);
+          motor.stop();
           break;
         default:
           const speed = motor.move(data.x, data.y);
@@ -128,7 +143,7 @@ const startWebSocketServer = () => {
       // close user connection
 
       // off the bot on connection close
-      motor.off();
+      motor.turnOffPwm();
     });
   });
 };
@@ -136,7 +151,7 @@ const startWebSocketServer = () => {
 const appExitHandler = (e) => {
   console.error('whoops, something is wrong');
   console.error(e);
-  motor.off();
+  motor.turnOffPwm();
   process.exit();
 };
 

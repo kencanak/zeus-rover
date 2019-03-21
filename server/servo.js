@@ -1,9 +1,11 @@
-'use strict'
-const pwmExp = require('/usr/bin/node-pwm-exp');
+'use strict';
+const PWM = require('./pwm');
 // ref: http://www.ee.ic.ac.uk/pcheung/teaching/DE1_EE/stores/sg90_datasheet.pdf
 
-class Servo {
+class Servo extends PWM {
   constructor(minPulse, maxPulse, channel) {
+    super(50);
+
     this._minPulse = minPulse;
     this._maxPulse = maxPulse;
     this._channel = channel;
@@ -18,15 +20,6 @@ class Servo {
 
     // calculate the us / degree
     this._step = this._range / 180;
-
-    pwmExp.setFrequency(50);
-
-    if (pwmExp.checkInit()) {
-      console.log('Oscillator sucessfull initialized');
-    } else {
-      console.warn('oscillator initializing');
-      pwmExp.driverInit();
-    }
   }
 
   setAngle(angle) {
@@ -44,9 +37,11 @@ class Servo {
     // to compute duty cycle, pulseWidth / period
     const dutyCycle = (pulseWidth * 100) / this._period;
 
-    pwmExp.setupDriver(this._channel, dutyCycle, 0, () => {
-      console.log('channel ' + this._channel + ' set dutycycle: ' + dutyCycle);
-    });
+    this.setPwmDriver(this._channel, dutyCycle, 0);
+  }
+
+  stop() {
+    this.setPwmDriver(this._channel, 0, 0);
   }
 }
 

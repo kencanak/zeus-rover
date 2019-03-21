@@ -6,9 +6,10 @@
   "dependencies": {
     "omega2-gpio": "^1.2.4",
     "events": "^3.0.0",
-    "nanotimer": "^0.3.15"
+    "nanotimer": "^0.3.15",
+    "utf8": "^3.0.0"
   },
   "devDependencies": {
-    "websocket": "^1.0.26"
+    "websocket": "1.0.26"
   }
 }
